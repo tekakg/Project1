@@ -16,41 +16,36 @@ public class Match {
 
     public void createTeam1() {
         team1 = new Team();
-        Player p1=new Player();
-        p1.name="Aditya";
-        p1.role="Batsman";
-        p1.createPlayer();
-        Player p2=new Player();
-        p2.name="Arpit";
-        p2.role="Batsman";
-        p2.createPlayer();
-        Player p3=new Player();
-        p3.name="vivek";
-        p3.role="bowler";
-        p3.createPlayer();
-        team1.listOfPlayers.add(p1);
-        team1.listOfPlayers.add(p2);
-        team1.listOfPlayers.add(p3);
+        Scanner src=new Scanner(System.in);
+        System.out.print("Enter Team1 Name: ");
+        team1.setTeamName(src.next());
+        System.out.println(team1.getTeamName());
+        System.out.print("Enter Total Players in Team1: ");
+        team1.setTotalPlayers(src.nextInt());
+        for(int i=0;i<team1.getTotalPlayers();i++)
+        {
+            Player p1=new Player();
+            p1.createPlayer();
+            team1.listOfPlayers.add(p1);
+        }
     }
 
 
     public void createTeam2() {
         team2 = new Team();
-        Player p1=new Player();
-        p1.name="Sanny";
-        p1.role="Batsman";
-        p1.createPlayer();
-        Player p2=new Player();
-        p2.name="Apoorv";
-        p2.role="Batsman";
-        p2.createPlayer();
-        Player p3=new Player();
-        p3.name="Aman";
-        p3.role="bowler";
-        p3.createPlayer();
-        team2.listOfPlayers.add(p1);
-        team2.listOfPlayers.add(p2);
-        team2.listOfPlayers.add(p3);
+        Scanner src=new Scanner(System.in);
+        System.out.print("Enter Team2 Name: ");
+        team2.setTeamName(src.next());
+        System.out.println(team2.getTeamName());
+        System.out.print("Enter Total Players in Team2: ");
+        team2.setTotalPlayers(src.nextInt());
+
+        for(int i=0;i<team2.getTotalPlayers();i++)
+        {
+            Player p1=new Player();
+            p1.createPlayer();
+            team2.listOfPlayers.add(p1);
+        }
     }
 
     public int toss() {
@@ -67,7 +62,8 @@ public class Match {
     }
 
     public void startMatch() {
-        System.out.println("Enter total number of overs");
+        System.out.println("Start Match");
+        System.out.print("Enter total number of overs: ");
         Scanner src = new Scanner(System.in);
         this.setOvers(src.nextInt());
         System.out.println("Create Team1");
@@ -76,6 +72,7 @@ public class Match {
         this.createTeam2();
         System.out.println("Toss " +
                 "Time");
+        System.out.println("Team1 has flip the coin");
         int tossResult = this.toss();
         if (tossResult == 0) {
             this.playMatch(team1, team2);
@@ -89,15 +86,20 @@ public class Match {
         Player playerNumber2 = BattingTeam.listOfPlayers.get(1);
         Player Striker = playerNumber1;
         Player nonStriker = playerNumber2;
+        Player Bowler=BowlingTeam.listOfPlayers.get(0);
         int flag = 0;
         for (int overnum = 0; overnum < overs; overnum++) {
             for (int j = 0; j < 6; j++) {
+                Bowler.incrementBallsBowled();
                 int run = randomfunction();
-                System.out.println(run);
+                Ball nball=new Ball(overnum,j+1,Bowler,Striker,run);
+                BattingTeam.BattingBalls.add(nball);
+                //System.out.println(run);
                 if (run == 7) {
-                    Striker.incrementBalls();
+                    Striker.incrementBallsFaced();
                     BattingTeam.incrementwicket();
-                    if (BattingTeam.wicket == 2)
+                    Bowler.incrementWickets();
+                    if (BattingTeam.getWicket() == 2)
                         {
                             flag = 1;
                             break;
@@ -106,7 +108,7 @@ public class Match {
                         for (Player player : BattingTeam.listOfPlayers) {
                             if (Striker==player) {
                                 player.outOrNot = true;
-                                Striker = BattingTeam.getPlayer(nonStriker);
+                                Striker = BattingTeam.getNewBatsman(nonStriker);
                                 break;
                             }
                         }
@@ -114,7 +116,7 @@ public class Match {
                 } else {
                     BattingTeam.incrementrun(run);
                     Striker.incrementrun(run);
-                    Striker.incrementBalls();
+                    Striker.incrementBallsFaced();
                     if (run % 2 == 1) {
                         Player temp = Striker;
                         Striker = nonStriker;
@@ -128,27 +130,39 @@ public class Match {
             Player temp = Striker;
             Striker = nonStriker;
             nonStriker = temp;
+            int index=BowlingTeam.listOfPlayers.indexOf(Bowler);
+            index++;
+            index=index%(BowlingTeam.getTotalPlayers());
+            Bowler=BowlingTeam.listOfPlayers.get(index);
             if (flag == 1) {
                 break;
             }
 
         }
-        BattingTeam.endInning();
+
         Scoreboard nwScoreboard = new Scoreboard();
-        nwScoreboard.printScoreboard(BattingTeam);
+        nwScoreboard.printScoreboard(BattingTeam,BowlingTeam);
+        BattingTeam.endInning();
+        nwScoreboard.printBallStatus(BattingTeam);
+
         flag = 0;
         playerNumber1 = BowlingTeam.listOfPlayers.get(0);
         playerNumber2 = BowlingTeam.listOfPlayers.get(1);
         Striker = playerNumber1;
         nonStriker = playerNumber2;
+        Bowler=BattingTeam.listOfPlayers.get(0);
         for (int overnum = 0; overnum < overs; overnum++) {
             for (int j = 0; j < 6; j++) {
                 int run = randomfunction();
-                System.out.println(run);
+                Bowler.incrementBallsBowled();
+                Ball nball=new Ball(overnum,j+1,Bowler,Striker,run);
+                BowlingTeam.BattingBalls.add(nball);
+                //System.out.println(run);
                 if (run == 7) {
-                    Striker.incrementBalls();
+                    Striker.incrementBallsFaced();
                     BowlingTeam.incrementwicket();
-                    if (BowlingTeam.wicket == 2)
+                    Bowler.incrementWickets();
+                    if (BowlingTeam.getWicket() == 2)
                         {
                             flag = 1;
                             break;
@@ -157,7 +171,7 @@ public class Match {
                         for (Player player : BowlingTeam.listOfPlayers) {
                             if (player == Striker) {
                                 Striker.outOrNot = true;
-                                Striker = BattingTeam.getPlayer(nonStriker);
+                                Striker = BowlingTeam.getNewBatsman(nonStriker);
                                 break;
                             }
                         }
@@ -170,7 +184,7 @@ public class Match {
                     }
                     BowlingTeam.incrementrun(run);
                     Striker.incrementrun(run);
-                    Striker.incrementBalls();
+                    Striker.incrementBallsFaced();
                     if (run % 2 == 1) {
                         Player temp = Striker;
                         Striker = nonStriker;
@@ -181,16 +195,23 @@ public class Match {
                     }
                 }
             }
+            // changing the strike at over change.
             Player temp = Striker;
             Striker = nonStriker;
             nonStriker = temp;
+            int index=BattingTeam.listOfPlayers.indexOf(Bowler);
+            index++;
+            index=index%(BattingTeam.getTotalPlayers());
+            Bowler=BattingTeam.listOfPlayers.get(index);
 
             if (flag == 1) {
                 break;
             }
         }
+
+        nwScoreboard.printScoreboard(BowlingTeam,BattingTeam);
         BowlingTeam.endInning();
-        nwScoreboard.printScoreboard(BowlingTeam);
+        nwScoreboard.printBallStatus(BowlingTeam);
         this.MatchResult();
     }
 
@@ -209,13 +230,14 @@ public class Match {
     }
 
     public void MatchResult() {
+        System.out.println("PRINT MATCH RESULT");
         if (team1.getFinalScore() > team2.getFinalScore()) {
-            System.out.println("team1 has won the match");
+            System.out.println("TEAM1 has won the match");
         } else if (team1.getFinalScore()<team2.getFinalScore()) {
-            System.out.println("team2 has won the match");
+            System.out.println("TEAM2 has won the match");
 
         } else {
-            System.out.println("Match Draw");
+            System.out.println("MATCH DRAWN");
         }
 
     }
